@@ -1,0 +1,106 @@
+/* Custom styling for the dashboard */
+body {
+    background-color: #001f3f; /* Anchor navy color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #f5f5f5;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+    background-color: #002f5f; /* Slightly lighter navy for cards */
+}
+
+.card-header {
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+    font-weight: 600;
+    background-color: #003366 !important; /* Darker navy for card headers */
+    color: white !important;
+}
+
+.display-4 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.geo-map {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    width: 100%;
+    height: 250px !important;
+    z-index: 1;
+    border: 1px solid #0059b3;
+}
+
+.filters select {
+    border-radius: 5px;
+    font-size: 0.9rem;
+    background-color: #003366;
+    color: white;
+    border: 1px solid #0059b3;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    background-color: #002f5f;
+    color: #f5f5f5;
+    border-color: #0059b3;
+}
+
+.alert {
+    border-radius: 5px;
+    margin-bottom: 15px;
+    background-color: #003366;
+    border-color: #0059b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 1.8rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .container-fluid {
+        padding: 10px;
+    }
+}
+
+/* Animation for loading data */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Filter styling */
+.filters select {
+    border-radius: 5px;
+    font-size: 0.9rem;
+    background-color: #003366;
+    color: white;
+    border: 1px solid #0059b3;
+}
+
+/* Active filter indicator */
+.region-filter-active {
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid rgba(255, 215, 0, 0.5) !important;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+/* Selected region highlight in header */
+.region-highlight {
+    color: #FFD700; /* Gold */
+    font-weight: 700;
+} 

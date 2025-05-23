@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestorView Strategic Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .data-source-pill {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .db-connected {
+            background-color: #28a745;
+            color: white;
+        }
+        .db-error {
+            background-color: #dc3545;
+            color: white;
+        }
+        .data-source-modal {
+            font-size: 0.9rem;
+        }
+        .data-source-modal table {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="bg-dark text-white p-4 mb-4" style="background-color: #00142a !important;">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1>InvestorView</h1>
+                    <p class="lead">Strategic Dashboard for Investors</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="filters mt-2">
+                        <select id="yearFilter" class="form-select mb-2">
+                            <option value="all">All Years</option>
+                            <option value="2022">2022</option>
+                        </select>
+                        <select id="regionFilter" class="form-select">
+                            <option value="all">All Regions</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI Section -->
+        <section class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-white h-100" style="background-color: #0074D9;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Total Revenue (YTD)</h5>
+                            <h2 id="totalRevenue" class="display-4">$0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white h-100" style="background-color: #2ECC40;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Total Profit (Est.)</h5>
+                            <h2 id="totalProfit" class="display-4">$0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white h-100" style="background-color: #FF851B;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Operating Regions</h5>
+                            <h2 id="regionsCount" class="display-4">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white h-100" style="background-color: #B10DC9;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Total Units Sold</h5>
+                            <h2 id="unitsSold" class="display-4">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Revenue & Profit Growth Over Time</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenueChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Revenue Share by Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="categoryChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Revenue by Region</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="regionChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Growth by State (Bubble Size = Revenue)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="mapChart" class="geo-map" style="height: 250px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights Section -->
+        <section class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-4 h-100">
+                        <div class="card-header">
+                            <h5>Top 3 Growing Categories (Last Quarter)</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul id="growingCategories" class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Loading data...
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-4 h-100">
+                        <div class="card-header">
+                            <h5>Regions Outperforming Average</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul id="outperformingRegions" class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Loading data...
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-4 h-100">
+                        <div class="card-header">
+                            <h5>Investor Highlight</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert">
+                                <strong>10% YOY revenue growth in Midwest</strong>
+                                <p class="mb-0">Consistent performance makes this region an attractive investment opportunity.</p>
+                            </div>
+                            <div class="alert">
+                                <strong>Sports Drink category showing 15% growth</strong>
+                                <p class="mb-0">Expanding product lines in this category could yield significant returns.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Data Source Indicator -->
+    <div id="dataSourcePill" class="data-source-pill">
+        <span id="dataSourceText">Checking data source...</span>
+    </div>
+
+    <!-- Data Source Modal -->
+    <div class="modal fade" id="dataSourceModal" tabindex="-1" aria-labelledby="dataSourceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content data-source-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dataSourceModalLabel">Data Source Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dbConnectionStatus"></div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>PostgreSQL Database</h6>
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <th>Database Name</th>
+                                    <td id="dbName">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Table</th>
+                                    <td id="dbTable">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Row Count</th>
+                                    <td id="dbRowCount">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>CSV Data Source</h6>
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <th>File</th>
+                                    <td id="csvFile">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Row Count</th>
+                                    <td id="csvRowCount">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6>Columns in Database</h6>
+                        <div id="dbColumns" class="small"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Data source status check
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check database connection
+            fetch('/api/db_status')
+                .then(response => response.json())
+                .then(data => {
+                    const pillElement = document.getElementById('dataSourcePill');
+                    
+                    if (data.status === 'connected') {
+                        pillElement.className = 'data-source-pill db-connected';
+                        document.getElementById('dataSourceText').textContent = 'Data: PostgreSQL + CSV';
+                        
+                        // Update modal content
+                        document.getElementById('dbConnectionStatus').innerHTML = 
+                            '<div class="alert alert-success">Successfully connected to PostgreSQL database.</div>';
+                        
+                        // Fill DB info
+                        document.getElementById('dbName').textContent = data.database.name;
+                        document.getElementById('dbTable').textContent = data.database.table;
+                        document.getElementById('dbRowCount').textContent = data.database.rows;
+                        
+                        // Show columns
+                        document.getElementById('dbColumns').innerHTML = 
+                            '<div class="bg-light p-2">' + data.database.columns.join(', ') + '</div>';
+                    } else {
+                        pillElement.className = 'data-source-pill db-error';
+                        document.getElementById('dataSourceText').textContent = 'Data: CSV Only';
+                        
+                        // Update modal content
+                        document.getElementById('dbConnectionStatus').innerHTML = 
+                            '<div class="alert alert-danger">Database Error: ' + data.message + '</div>';
+                    }
+                    
+                    // Fill CSV info
+                    document.getElementById('csvFile').textContent = data.csv.file;
+                    document.getElementById('csvRowCount').textContent = data.csv.rows;
+                    
+                    // Make pill clickable to open modal
+                    pillElement.addEventListener('click', function() {
+                        const modal = new bootstrap.Modal(document.getElementById('dataSourceModal'));
+                        modal.show();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error checking data source:', error);
+                    document.getElementById('dataSourcePill').className = 'data-source-pill db-error';
+                    document.getElementById('dataSourceText').textContent = 'Data: CSV Only';
+                });
+        });
+    </script>
+</body>
+</html> 
