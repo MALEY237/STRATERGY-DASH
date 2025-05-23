@@ -1,6 +1,6 @@
-# Retail Analytics Strategic Dashboard
+# Retail Strategic Dashboard
 
-A Flask-based dashboard for retail analytics data visualization, designed for investors and executives.
+A Flask-based dashboard for STRATERGIC analytics data visualization, designed for investors and executives.
 
 ## Overview
 
@@ -64,15 +64,7 @@ This dashboard uses the `RetailAnalytics.csv` file as its primary data source. T
     - Product category distribution
     - Growth indicators
 
-- **Operational Dashboard**
-  - **Story**: "What's happening at the product and retailer level?"
-  - **Type**: Operational/Tactical
-  - **Target Users**: Management, Operations Teams
-  - **Key Metrics**:
-    - Retailer performance
-    - Product brand metrics
-    - Sugar vs. No-sugar product analysis
-    - Weather impact on sales
+  
 
 ## Database Integration
 
